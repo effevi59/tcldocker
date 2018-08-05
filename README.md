@@ -2,7 +2,7 @@
 
 Useful containers for tcl developers
 
-rivet.dck is a docker file for creating a working tcl 8.6, batteries included, of a rivet container.
+rivet.dck is a docker file for creating a working tcl 8.6, batteries included, rivet container.
 
 see https://tcl.apache.org/rivet/
 
