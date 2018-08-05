@@ -1,0 +1,43 @@
+FROM registry.centos.org/centos:latest
+MAINTAINER Metodo
+RUN set -x && \
+   yum -y update && \
+   yum -y install httpd httpd-devel openssl-devel gcc make unzip autoconf && \
+   mkdir /rivet && cd /rivet && \
+   curl -o rivet.taz http://mirror.nohup.it/apache/tcl/rivet/rivet-current.tar.gz && \
+   tar -xf rivet.taz && rm -f rivet.taz && \
+   mv `ls` source && \
+   curl -o tcl.taz http://core.tcl.tk/tcl/tarball/release/tcl.tar.gz && \
+   tar -xf tcl.taz && rm -f tcl.taz && \
+   cd /rivet/tcl/unix && sh configure --prefix=/opt/tcl86 && make install && \
+   echo /opt/tcl86/lib > /etc/ld.so.conf.d/tcl-x86_64.conf && ldconfig && \
+   cd /rivet/source && sh configure --with-tcl=/opt/tcl86/lib && make install && \
+   cp /rivet/source/doc/examples/hello.rvt /var/www/html/. && \
+   cp /rivet/source/doc/examples/color-table.tcl /var/www/html/. && \
+   cd /rivet/tcl && curl -o tdom.taz https://core.tcl.tk/tdom/tarball/86c70df47c/tDOM-86c70df47c.tar.gz && tar -xf tdom.taz && cd tDOM-86c70df47c && \
+   sh configure --with-tcl=/opt/tcl86/lib && make install && \
+   cd /rivet/tcl && curl -o tls.taz https://core.tcl.tk/tcltls/uv/tcltls-1.7.16.tar.gz && tar -xf tls.taz && cd tcltls-1.7.16 && \
+   sh configure --with-tcl=/opt/tcl86/lib && make install && \
+   cd /rivet/tcl && curl -o tcllib.taz https://core.tcl.tk/tcllib/uv/tcllib-1.19.tar.gz && tar -xf tcllib.taz && cd tcllib-1.19 && \
+   sh configure --prefix=/opt/tcl86 && make install && \
+   yum -y install https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-centos10-10-2.noarch.rpm && \
+   yum -y install postgresql10-10.4 postgresql10-devel-10.4 && \
+   cd /rivet && curl -Lo pgtcl.taz https://github.com/flightaware/Pgtcl/archive/v2.3.4.tar.gz && \
+   tar -xf pgtcl.taz && cd Pgtcl-2.3.4 && export PG_CONFIG=/usr/pgsql-10/bin/pg_config && \
+   autoreconf && \
+   sh configure --with-tcl=/opt/tcl86/lib --mandir=/opt/tcl86/man && \
+   make install && \
+   cd /rivet && \
+   curl -o sqlite.taz https://www.sqlite.org/2018/sqlite-autoconf-3240000.tar.gz && \
+   tar -xf sqlite.taz && \
+   cd sqlite-autoconf-3240000/tea && \
+   sh configure --with-tcl=/opt/tcl86/lib && \
+   make install && \
+   echo "ServerName rivet.rivet.com" >> /etc/httpd/conf.d/rivet.conf && \
+   echo "LoadModule rivet_module modules/mod_rivet.so" >> /etc/httpd/conf.d/rivet.conf && \
+   echo "AddType application/x-httpd-rivet rvt" >> /etc/httpd/conf.d/rivet.conf && \
+   echo "AddType application/x-rivet-tcl tcl" >> /etc/httpd/conf.d/rivet.conf && \
+   echo "exec httpd -DFOREGROUND" > /startup.sh && \
+   chmod 500 /startup.sh
+WORKDIR /home/root
+CMD /startup.sh
