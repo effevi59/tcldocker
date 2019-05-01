@@ -8,7 +8,7 @@ see https://tcl.apache.org/rivet/
 
 generate your home instance of this container in this way
 
-download rivet.dck on a new, empty directory, i.e. mydir
+download rivet.dck and rivetsetup.sh on a new, empty directory, i.e. mydir
 
 cd mydir
 
